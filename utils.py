@@ -26,6 +26,10 @@ def escribir_imagen(frame, hand, marcos_transcurridos, tiempo_calibracion, regio
     elif hand and hand.isInFrame:
         if hand.isWaving:
             text = "Saludando"
+        if hand.isFist:
+            text = "Puño"
+        elif hand.isThumbUp:
+            text = "Pulgar arriba"
         else:
             text = f"Dedos: {hand.fingers if hand.fingers is not None else 'N/A'}"
     else:

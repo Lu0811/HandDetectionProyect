@@ -7,8 +7,11 @@ class DatosMano:
         self.actualizar(top, bottom, left, right, centerX)
         self.prevCenterX = 0
         self.isInFrame = False
-        self.isWaving = False
         self.fingers = None
+        #* Gestures
+        self.isWaving = False
+        self.isThumbUp = False
+        self.isFist = False
         self.gestureList = []
 
     def actualizar(self, top, bottom, left, right, centerX):
@@ -23,6 +26,16 @@ class DatosMano:
         if len(self.center_positions) >= 2:
             movement = np.abs(self.center_positions[-1] - self.center_positions[0])
             self.isWaving = movement > 20  # Ajusta este umbral según sea necesario
+
+    def verificar_pulgar_arriba(self):
+        if self.fingers == 1:
+            if self.top[1] < self.centerY - 20:  
+                self.isThumbUp = True
+
+    def verificar_fist(self):
+        if self.fingers == 0:
+            if self.right[0] - self.left[0] < 50:  
+                self.isFist = True
 
 def obtener_datos_mano(segmented_image, frame, roi_offset, mano):
     convexHull = cv2.convexHull(segmented_image)
@@ -39,6 +52,8 @@ def obtener_datos_mano(segmented_image, frame, roi_offset, mano):
     else:
         mano.actualizar(top, bottom, left, right, centerX)
     mano.verificar_saluda()
+    mano.verificar_pulgar_arriba()
+    mano.verificar_fist()
 
     fingers, finger_tips, finger_bases = contar_dedos(segmented_image, frame, roi_offset, center)
     mano.gestureList.append(fingers)
