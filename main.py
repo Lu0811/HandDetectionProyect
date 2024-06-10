@@ -41,6 +41,17 @@ while True:
             cv2.imshow("Segmented Image", region)
             mano = obtener_datos_mano(segmented_region, frame, np.array([region_left, region_top]), mano)
 
+            if mano.isPeaceSign:
+                cv2.putText(frame, "Simbolo de Paz", (10, 60), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 255, 0), 2, cv2.LINE_AA)
+            if mano.isStopSign:
+                cv2.putText(frame, "Simbolo de Stop", (10, 100), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
+            if mano.isLike:
+                cv2.putText(frame, "Like", (10, 140), cv2.FONT_HERSHEY_COMPLEX, 0.7, (255, 255, 0), 2, cv2.LINE_AA)
+            if mano.isOk:
+                cv2.putText(frame, "OK", (10, 180), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 255, 255), 2, cv2.LINE_AA)
+            if mano.isMiddleFinger:
+                cv2.putText(frame, "Dedo Corazon", (10, 220), cv2.FONT_HERSHEY_COMPLEX, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+
     escribir_imagen(frame, mano, marcos_transcurridos, TIEMPO_CALIBRACION, region_left, region_top, region_right, region_bottom)
     cv2.imshow("Camera Input", frame)
     marcos_transcurridos += 1

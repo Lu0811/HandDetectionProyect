@@ -12,11 +12,17 @@ class DatosMano:
         self.isWaving = False
         self.isThumbUp = False
         self.isFist = False
+        self.isPeaceSign = False
+        self.isStopSign = False
+        self.isLike = False
+        self.isOk = False
+        self.isMiddleFinger = False
         self.gestureList = []
 
     def actualizar(self, top, bottom, left, right, centerX):
         self.top, self.bottom, self.left, self.right = top, bottom, left, right
         self.centerX = centerX
+        self.centerY = int((top[1] + bottom[1]) / 2)  # Definiendo centerY
         self.center_positions.append(centerX)
         if len(self.center_positions) > 10:
             self.center_positions.pop(0)
@@ -26,16 +32,56 @@ class DatosMano:
         if len(self.center_positions) >= 2:
             movement = np.abs(self.center_positions[-1] - self.center_positions[0])
             self.isWaving = movement > 20  # Ajusta este umbral según sea necesario
+            print(f"Saludar: {self.isWaving}")
 
     def verificar_pulgar_arriba(self):
-        if self.fingers == 1:
-            if self.top[1] < self.centerY - 20:  
-                self.isThumbUp = True
+        if self.fingers == 1 and self.top[1] < self.centerY - 20:
+            self.isThumbUp = True
+            print("Pulgar arriba detectado")
+        else:
+            self.isThumbUp = False
 
     def verificar_fist(self):
-        if self.fingers == 0:
-            if self.right[0] - self.left[0] < 50:  
-                self.isFist = True
+        if self.fingers == 0 and self.right[0] - self.left[0] < 50:
+            self.isFist = True
+            print("Puño detectado")
+        else:
+            self.isFist = False
+
+    def verificar_simbolo_paz(self):
+        if self.fingers == 2:
+            self.isPeaceSign = True
+            print("Simbolo de Paz detectado")
+        else:
+            self.isPeaceSign = False
+
+    def verificar_simbolo_stop(self):
+        if self.fingers == 5:
+            self.isStopSign = True
+            print("Simbolo de Stop detectado")
+        else:
+            self.isStopSign = False
+
+    def verificar_like(self):
+        if self.fingers == 1 and self.top[1] < self.centerY - 20:
+            self.isLike = True
+            print("Like detectado")
+        else:
+            self.isLike = False
+
+    def verificar_ok(self):
+        if self.fingers == 3 and self.top[1] < self.centerY - 20:
+            self.isOk = True
+            print("OK detectado")
+        else:
+            self.isOk = False
+
+    def verificar_dedo_corazon(self):
+        if self.fingers == 1 and self.top[1] > self.centerY + 20:
+            self.isMiddleFinger = True
+            print("Dedo corazón detectado")
+        else:
+            self.isMiddleFinger = False
 
 def obtener_datos_mano(segmented_image, frame, roi_offset, mano):
     convexHull = cv2.convexHull(segmented_image)
@@ -51,15 +97,22 @@ def obtener_datos_mano(segmented_image, frame, roi_offset, mano):
         mano = DatosMano(top, bottom, left, right, centerX)
     else:
         mano.actualizar(top, bottom, left, right, centerX)
-    mano.verificar_saluda()
-    mano.verificar_pulgar_arriba()
-    mano.verificar_fist()
-
+        
     fingers, finger_tips, finger_bases = contar_dedos(segmented_image, frame, roi_offset, center)
+    print(f"Dedos detectados: {fingers}")  # Depuración
     mano.gestureList.append(fingers)
     if len(mano.gestureList) % 12 == 0:
         mano.fingers = most_frequent(mano.gestureList)
         mano.gestureList.clear()
+
+    mano.verificar_saluda()
+    mano.verificar_pulgar_arriba()
+    mano.verificar_fist()
+    mano.verificar_simbolo_paz()
+    mano.verificar_simbolo_stop()
+    mano.verificar_like()
+    mano.verificar_ok()
+    mano.verificar_dedo_corazon()
 
     dibujar_esqueleto(frame, finger_tips, finger_bases, center, roi_offset)
     return mano
